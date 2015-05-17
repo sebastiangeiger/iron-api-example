@@ -1,0 +1,4 @@
+[package]
+name = "iron-api-example"
+version = "0.1.0"
+authors = ["Sebastian Geiger <sebastian.geiger@gmail.com>"]
