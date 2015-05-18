@@ -6,3 +6,4 @@ authors = ["Sebastian Geiger <sebastian.geiger@gmail.com>"]
 [dependencies]
 iron = "0.1.17"
 router = "*"
+rustc-serialize = "0.3"
