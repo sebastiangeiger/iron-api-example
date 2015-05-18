@@ -26,3 +26,27 @@ RSpec.configure do |config|
   end
 end
 
+RSpec::Matchers.define :have_status_code do |expected|
+  match do |actual|
+      if actual.respond_to?(:call)
+        begin
+          actual.call
+          page.status_code == expected
+        # TODO: Swallowing errors here, fine for now
+        rescue Object => e
+          case expected
+          when 404
+            e.message.include? "404 => Net::HTTPNotFound"
+          else
+            fail "Please teach matcher how to handle status_code #{expected}"
+          end
+        end
+      else
+        actual.status_code == expected
+      end
+  end
+
+  def supports_block_expectations?
+    true
+  end
+end
