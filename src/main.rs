@@ -8,11 +8,11 @@ use router::Router;
 fn main() {
     let mut router = Router::new();
 
-    fn hello_world(_: &mut Request) -> IronResult<Response> {
-        Ok(Response::with((status::Ok, "Hello World!")))
+    fn items_path(_: &mut Request) -> IronResult<Response> {
+        Ok(Response::with((status::Ok, "[]")))
     }
 
-    router.get("/", hello_world);
+    router.get("/items", items_path);
 
     Iron::new(router).http("localhost:3000").unwrap();
     println!("On 3000");
