@@ -19,8 +19,10 @@ fn main() {
     fn items_path(_: &mut Request) -> IronResult<Response> {
         let mut result : Vec<Item> = Vec::new();
         result.push(Item { name: "Bananas".to_string() });
-        let json_str = json::encode(&result).unwrap();
-        Ok(Response::with((status::Ok, json_str)))
+        match json::encode(&result) {
+            Ok(json_str) => Ok(Response::with((status::Ok, json_str))),
+            Err(_) => Ok(Response::with((status::InternalServerError, "")))
+        }
     }
 
     router.get("/items", items_path);
