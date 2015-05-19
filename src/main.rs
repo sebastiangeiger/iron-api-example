@@ -17,7 +17,8 @@ fn main() {
     let mut router = Router::new();
 
     fn items_path(_: &mut Request) -> IronResult<Response> {
-        let result : Vec<String> = Vec::new();
+        let mut result : Vec<Item> = Vec::new();
+        result.push(Item { name: "Bananas".to_string() });
         let json_str = json::encode(&result).unwrap();
         Ok(Response::with((status::Ok, json_str)))
     }

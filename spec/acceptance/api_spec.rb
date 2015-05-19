@@ -6,7 +6,7 @@ describe 'API', type: :feature do
   describe 'GET /items' do
     it 'gets an empty list' do
       expect { visit('/items') }.to have_status_code 200
-      expect(json).to eql []
+      expect(json).to eql [{"name" => "Bananas"}]
     end
   end
 
