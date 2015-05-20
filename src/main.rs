@@ -6,6 +6,7 @@ use iron::prelude::*;
 use iron::status;
 use router::Router;
 use rustc_serialize::json;
+use std::io::Read;
 
 #[derive(RustcDecodable, RustcEncodable)]
 struct Item {
@@ -25,7 +26,17 @@ fn main() {
         }
     }
 
+    fn create_item_path(request: &mut Request) -> IronResult<Response> {
+        let ref mut body = request.body;
+        let mut body_string = String::new();
+        match body.read_to_string(&mut body_string) {
+            Ok(_) => Ok(Response::with((status::Ok, body_string))),
+            Err(_) => Ok(Response::with((status::InternalServerError, "")))
+        }
+    }
+
     router.get("/items", items_path);
+    router.post("/items", create_item_path);
 
     Iron::new(router).http("localhost:3000").unwrap();
     println!("On 3000");
