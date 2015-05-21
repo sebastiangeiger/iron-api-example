@@ -8,9 +8,9 @@ def get(path)
   connection.get(path)
 end
 
-def post(path, json:)
+def post(path, options = {})
   connection.post(path) do |request|
-    request.body = JSON.dump(json)
+    request.body = JSON.dump(options[:json]) if options[:json]
   end
 end
 
