@@ -8,7 +8,7 @@ use router::Router;
 use rustc_serialize::json;
 use std::io::Read;
 
-#[derive(RustcDecodable, RustcEncodable)]
+#[derive(RustcDecodable, RustcEncodable, Debug, PartialEq)]
 struct Item {
     name: String,
 }
@@ -53,5 +53,27 @@ mod tests {
             name: "Bananas".to_string()
         };
         assert_eq!(json::encode(&item).unwrap(), "{\"name\":\"Bananas\"}".to_string());
+    }
+
+    #[test]
+    fn test_item_equality_with_the_same_name() {
+        let item = Item {
+            name: "Bananas".to_string()
+        };
+        let item_2 = Item {
+            name: "Bananas".to_string()
+        };
+        assert_eq!(item, item_2);
+    }
+
+    #[test]
+    fn test_item_equality_with_a_different_name() {
+        let item = Item {
+            name: "Bananas".to_string()
+        };
+        let item_2 = Item {
+            name: "Apples".to_string()
+        };
+        assert!(item != item_2);
     }
 }
