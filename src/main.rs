@@ -1,16 +1,55 @@
 extern crate iron;
 extern crate router;
 extern crate rustc_serialize;
+extern crate rusqlite;
 
 use iron::prelude::*;
 use iron::status;
 use router::Router;
 use rustc_serialize::json;
 use std::io::Read;
+use rusqlite::SqliteConnection;
 
 #[derive(RustcDecodable, RustcEncodable, Debug, PartialEq)]
 struct Item {
     name: String,
+}
+
+struct ItemMapper {
+    connection: rusqlite::SqliteConnection,
+}
+
+impl ItemMapper {
+    fn new() -> ItemMapper {
+        let mapper = ItemMapper {
+            connection: SqliteConnection::open_in_memory().unwrap()
+        };
+        mapper.create_table();
+        mapper
+    }
+
+    fn create_table(&self) {
+        self.connection.execute("CREATE TABLE items (id   INTEGER PRIMARY KEY,
+                                                     name TEXT NOT NULL)", &[]).unwrap();
+    }
+
+    fn insert(&self, item: &Item) {
+        self.connection.execute("INSERT INTO items (name) VALUES ($1)", &[&item.name]).unwrap();
+    }
+
+    fn all(&self) -> Vec<Item> {
+        let mut result = Vec::new();
+        let mut stmt = self.connection.prepare("SELECT name FROM items").unwrap();
+        let items_iter = stmt.query_map(&[], |row| {
+            Item {
+                name: row.get(0),
+            }
+        }).unwrap();
+        for item in items_iter {
+            result.push(item.unwrap())
+        };
+        result
+    }
 }
 
 #[allow(dead_code)]
@@ -51,6 +90,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use Item;
+    use ItemMapper;
     use rustc_serialize::json;
 
     #[test]
@@ -98,5 +138,15 @@ mod tests {
         let json = "{\"garbage\":\"key\"}";
         let parse_result : Result<Item,_> = json::decode(&json);
         assert!(parse_result.is_err())
+    }
+
+    #[test]
+    fn test_writing_and_reading_one_item_from_db() {
+        let mapper = ItemMapper::new();
+        let item = Item {
+            name: "Bananas".to_string()
+        };
+        mapper.insert(&item);
+        assert_eq!(mapper.all(), vec![item])
     }
 }
