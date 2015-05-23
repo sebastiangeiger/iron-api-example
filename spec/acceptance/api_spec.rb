@@ -36,14 +36,30 @@ describe 'API', type: :feature do
   end
 
   describe 'POST /items' do
-    subject(:response) { post('/items', json: [{name: "Bananas"}]) }
+    subject(:response) { post('/items', json: payload) }
 
-    it 'gets a 200 response' do
-      expect(response.status).to eql 200
+    context 'with a valid payload' do
+      let(:payload) { {name: "Bananas"} }
+
+      it 'gets a 200 response' do
+        expect(response.status).to eql 200
+      end
+
+      it 'mirrors back the item passed in' do
+        expect(json).to eql({"name" => "Bananas"})
+      end
     end
 
-    it 'mirrors back the item created' do
-      expect(json).to eql [{"name" => "Bananas"}]
+    context 'with an invalid payload' do
+      let(:payload) { {something: "else"} }
+
+      it 'gets a 422 response' do
+        expect(response.status).to eql 422
+      end
+
+      it 'has an error message' do
+        expect(json).to eql({"error" => "Invalid payload"})
+      end
     end
   end
 end

@@ -30,7 +30,13 @@ fn main() {
         let ref mut body = request.body;
         let mut body_string = String::new();
         match body.read_to_string(&mut body_string) {
-            Ok(_) => Ok(Response::with((status::Ok, body_string))),
+            Ok(_) => {
+                let item : Result<Item,_> = json::decode(&body_string);
+                match item {
+                    Ok(_) => Ok(Response::with((status::Ok, body_string))),
+                    Err(_) => Ok(Response::with((status::UnprocessableEntity, "{\"error\":\"Invalid payload\"}")))
+                }
+            },
             Err(_) => Ok(Response::with((status::InternalServerError, "")))
         }
     }
