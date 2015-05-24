@@ -9,6 +9,7 @@ use router::Router;
 use rustc_serialize::json;
 use std::io::Read;
 use rusqlite::SqliteConnection;
+use std::path::Path;
 
 #[derive(RustcDecodable, RustcEncodable, Debug, PartialEq)]
 struct Item {
@@ -21,14 +22,20 @@ struct ItemMapper {
 
 impl ItemMapper {
     fn new() -> ItemMapper {
+        let path = Path::new("test.sqlite3");
         ItemMapper {
-            connection: SqliteConnection::open_in_memory().unwrap()
+            connection: SqliteConnection::open(&path).unwrap()
         }
     }
 
     fn create_table(&self) {
-        self.connection.execute("CREATE TABLE items (id   INTEGER PRIMARY KEY,
-                                                     name TEXT NOT NULL)", &[]).unwrap();
+        self.connection.execute("CREATE TABLE IF NOT EXISTS items (id   INTEGER PRIMARY KEY,
+                                                                   name TEXT NOT NULL)", &[]).unwrap();
+    }
+
+    #[allow(dead_code)]
+    fn drop_table(&self) {
+        self.connection.execute("DROP TABLE IF EXISTS items", &[]).unwrap();
     }
 
     fn insert(&self, item: &Item) {
@@ -144,8 +151,16 @@ mod tests {
     }
 
     #[test]
+    fn test_item_mapper_create_table_can_be_called_multiple_times() {
+        let mapper = ItemMapper::new();
+        mapper.create_table();
+        mapper.create_table();
+    }
+
+    #[test]
     fn test_writing_and_reading_one_item_from_db() {
         let mapper = ItemMapper::new();
+        mapper.drop_table();
         mapper.create_table();
         let item = Item {
             name: "Bananas".to_string()

@@ -1,4 +1,5 @@
 require_relative '../../spec/spec_helper'
+require "sqlite3"
 
 def connection
   @connection ||= Faraday.new(:url => 'http://localhost:3000')
@@ -17,6 +18,12 @@ end
 describe 'API', type: :feature do
   let(:json) { JSON.parse(response.body) }
 
+  after(:each) do
+    db = SQLite3::Database.new "test.sqlite3"
+    db.execute "DELETE FROM items"
+  end
+
+
   describe 'GET /items' do
     subject(:response) { get('/items') }
 
@@ -26,6 +33,14 @@ describe 'API', type: :feature do
 
     it 'gets an empty list' do
       expect(json).to eql []
+    end
+
+    context 'after adding an item' do
+      before { post('/items', json: { name: "Apples" }) }
+
+      it 'gets a list with the added item' do
+        expect(json).to eql [{"name" => "Apples"}]
+      end
     end
   end
 
