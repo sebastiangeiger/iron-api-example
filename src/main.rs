@@ -21,11 +21,9 @@ struct ItemMapper {
 
 impl ItemMapper {
     fn new() -> ItemMapper {
-        let mapper = ItemMapper {
+        ItemMapper {
             connection: SqliteConnection::open_in_memory().unwrap()
-        };
-        mapper.create_table();
-        mapper
+        }
     }
 
     fn create_table(&self) {
@@ -55,11 +53,12 @@ impl ItemMapper {
 #[allow(dead_code)]
 fn main() {
     let mut router = Router::new();
+    ItemMapper::new().create_table();
 
     fn items_path(_: &mut Request) -> IronResult<Response> {
-        let mut result : Vec<Item> = Vec::new();
-        result.push(Item { name: "Bananas".to_string() });
-        match json::encode(&result) {
+        let item_mapper = ItemMapper::new();
+        let items : Vec<Item> = item_mapper.all();
+        match json::encode(&items) {
             Ok(json_str) => Ok(Response::with((status::Ok, json_str))),
             Err(_) => Ok(Response::with((status::InternalServerError, "")))
         }
@@ -70,9 +69,13 @@ fn main() {
         let mut body_string = String::new();
         match body.read_to_string(&mut body_string) {
             Ok(_) => {
-                let item : Result<Item,_> = json::decode(&body_string);
-                match item {
-                    Ok(_) => Ok(Response::with((status::Ok, body_string))),
+                let decoding_result : Result<Item,_> = json::decode(&body_string);
+                match decoding_result {
+                    Ok(item) => {
+                        let item_mapper = ItemMapper::new();
+                        item_mapper.insert(&item);
+                        Ok(Response::with((status::Ok, json::encode(&item).unwrap())))
+                    }
                     Err(_) => Ok(Response::with((status::UnprocessableEntity, "{\"error\":\"Invalid payload\"}")))
                 }
             },
@@ -143,6 +146,7 @@ mod tests {
     #[test]
     fn test_writing_and_reading_one_item_from_db() {
         let mapper = ItemMapper::new();
+        mapper.create_table();
         let item = Item {
             name: "Bananas".to_string()
         };

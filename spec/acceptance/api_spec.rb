@@ -25,7 +25,7 @@ describe 'API', type: :feature do
     end
 
     it 'gets an empty list' do
-      expect(json).to eql [{"name" => "Bananas"}]
+      expect(json).to eql []
     end
   end
 
