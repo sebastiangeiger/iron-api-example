@@ -6,12 +6,17 @@ def connection
 end
 
 def get(path)
-  connection.get(path)
+  connection.get(path, options = {}) do |request|
+    request.headers['Content-Type'] = 'application/json'
+    request.headers['X-Auth-Token'] = options[:auth_token] if options[:auth_token]
+  end
 end
 
 def post(path, options = {})
   connection.post(path) do |request|
     request.body = JSON.dump(options[:json]) if options[:json]
+    request.headers['Content-Type'] = 'application/json'
+    request.headers['X-Auth-Token'] = options[:auth_token] if options[:auth_token]
   end
 end
 
