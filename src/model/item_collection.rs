@@ -17,7 +17,7 @@ impl ItemCollection {
         }
     }
 
-    fn new_with_items(items: Vec<Item>) -> ItemCollection {
+    pub fn new_with_items(items: Vec<Item>) -> ItemCollection {
         ItemCollection {
             items: items,
         }
@@ -31,7 +31,7 @@ impl ItemCollection {
         self.items.push(item);
     }
 
-    fn to_json(&self) -> Result<String, EncoderError> {
+    pub fn to_json(&self) -> Result<String, EncoderError> {
         rustc_serialize::json::encode(&self.items)
     }
 

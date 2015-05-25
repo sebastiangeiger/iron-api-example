@@ -1,6 +1,6 @@
 use rusqlite::SqliteConnection;
 use std::path::Path;
-use ::model::Item;
+use ::model::{Item,ItemCollection};
 
 pub struct ItemMapper {
     connection: SqliteConnection,
@@ -28,7 +28,7 @@ impl ItemMapper {
         self.connection.execute("INSERT INTO items (name) VALUES ($1)", &[&item.name]).unwrap();
     }
 
-    pub fn all(&self) -> Vec<Item> {
+    pub fn all(&self) -> ItemCollection {
         let mut result = Vec::new();
         let mut stmt = self.connection.prepare("SELECT name FROM items").unwrap();
         let items_iter = stmt.query_map(&[], |row| {
@@ -39,13 +39,13 @@ impl ItemMapper {
         for item in items_iter {
             result.push(item.unwrap())
         };
-        result
+        ItemCollection::new_with_items(result)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use model::{Item, ItemMapper};
+    use model::{Item, ItemMapper, ItemCollection};
 
     #[test]
     fn test_item_mapper_create_table_can_be_called_multiple_times() {
@@ -63,6 +63,6 @@ mod tests {
             name: "Bananas".to_string()
         };
         mapper.insert(&item);
-        assert_eq!(mapper.all(), vec![item])
+        assert_eq!(mapper.all(), ItemCollection::new_with_items(vec![item]))
     }
 }

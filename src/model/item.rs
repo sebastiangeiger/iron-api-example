@@ -3,19 +3,17 @@ extern crate rustc_serialize;
 use rustc_serialize::json;
 use rustc_serialize::json::{EncoderError,DecoderError};
 
-type Json = String;
-
 #[derive(RustcDecodable, RustcEncodable, Debug, PartialEq)]
 pub struct Item {
     pub name: String,
 }
 
 impl Item {
-    pub fn to_json(&self) -> Result<Json, EncoderError> {
+    pub fn to_json(&self) -> Result<String, EncoderError> {
         json::encode(&self)
     }
 
-    fn from_json(json : &Json) -> Result<Item, DecoderError> {
+    pub fn from_json(json : &String) -> Result<Item, DecoderError> {
         json::decode(&json)
     }
 }
