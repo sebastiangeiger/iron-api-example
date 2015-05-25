@@ -1,6 +1,23 @@
+extern crate rustc_serialize;
+
+use rustc_serialize::json;
+use rustc_serialize::json::{EncoderError,DecoderError};
+
+type Json = String;
+
 #[derive(RustcDecodable, RustcEncodable, Debug, PartialEq)]
 pub struct Item {
     pub name: String,
+}
+
+impl Item {
+    pub fn to_json(&self) -> Result<Json, EncoderError> {
+        json::encode(&self)
+    }
+
+    fn from_json(json : &Json) -> Result<Item, DecoderError> {
+        json::decode(&json)
+    }
 }
 
 #[cfg(test)]
@@ -13,7 +30,7 @@ mod tests {
         let item = Item {
             name: "Bananas".to_string()
         };
-        assert_eq!(json::encode(&item).unwrap(), "{\"name\":\"Bananas\"}".to_string());
+        assert_eq!(item.to_json().unwrap(), "{\"name\":\"Bananas\"}".to_string());
     }
 
     #[test]
@@ -43,15 +60,15 @@ mod tests {
         let item = Item {
             name: "Bananas".to_string()
         };
-        let json = "{\"name\":\"Bananas\"}";
-        let parsed_item : Item = json::decode(&json).unwrap();
+        let json = "{\"name\":\"Bananas\"}".to_string();
+        let parsed_item = Item::from_json(&json).unwrap();
         assert_eq!(parsed_item, item);
     }
 
     #[test]
     fn test_item_parsing_with_invalid_item() {
-        let json = "{\"garbage\":\"key\"}";
-        let parse_result : Result<Item,_> = json::decode(&json);
+        let json = "{\"garbage\":\"key\"}".to_string();
+        let parse_result = Item::from_json(&json);
         assert!(parse_result.is_err())
     }
 }

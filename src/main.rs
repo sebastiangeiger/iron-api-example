@@ -36,7 +36,7 @@ fn main() {
                     Ok(item) => {
                         let item_mapper = ItemMapper::new();
                         item_mapper.insert(&item);
-                        Ok(Response::with((status::Ok, json::encode(&item).unwrap())))
+                        Ok(Response::with((status::Ok, item.to_json().unwrap())))
                     }
                     Err(_) => Ok(Response::with((status::UnprocessableEntity, "{\"error\":\"Invalid payload\"}")))
                 }
