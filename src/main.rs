@@ -30,8 +30,7 @@ fn main() {
         let mut body_string = String::new();
         match body.read_to_string(&mut body_string) {
             Ok(_) => {
-                let decoding_result = Item::from_json(&body_string);
-                match decoding_result {
+                match Item::from_json(&body_string) {
                     Ok(item) => {
                         let item_mapper = ItemMapper::new();
                         item_mapper.insert(&item);
