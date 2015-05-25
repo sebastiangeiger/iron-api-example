@@ -42,3 +42,27 @@ impl ItemMapper {
         result
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use model::{Item, ItemMapper};
+
+    #[test]
+    fn test_item_mapper_create_table_can_be_called_multiple_times() {
+        let mapper = ItemMapper::new();
+        mapper.create_table();
+        mapper.create_table();
+    }
+
+    #[test]
+    fn test_writing_and_reading_one_item_from_db() {
+        let mapper = ItemMapper::new();
+        mapper.drop_table();
+        mapper.create_table();
+        let item = Item {
+            name: "Bananas".to_string()
+        };
+        mapper.insert(&item);
+        assert_eq!(mapper.all(), vec![item])
+    }
+}
