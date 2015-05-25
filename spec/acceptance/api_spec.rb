@@ -5,8 +5,8 @@ def connection
   @connection ||= Faraday.new(:url => 'http://localhost:3000')
 end
 
-def get(path)
-  connection.get(path, options = {}) do |request|
+def get(path, options = {})
+  connection.get(path) do |request|
     request.headers['Content-Type'] = 'application/json'
     request.headers['X-Auth-Token'] = options[:auth_token] if options[:auth_token]
   end
@@ -28,35 +28,50 @@ describe 'API', type: :feature do
     db.execute "DELETE FROM items"
   end
 
+  let(:auth_token) { "VALID_TOKEN" }
 
   describe 'GET /items' do
-    subject(:response) { get('/items') }
+    subject(:response) { get('/items', auth_token: auth_token) }
 
-    it 'gets a 200 response' do
-      expect(response.status).to eql 200
+    context 'when authorized' do
+      it 'gets a 200 response' do
+        expect(response.status).to eql 200
+      end
+
+      it 'gets an empty list' do
+        expect(json).to eql []
+      end
+
+      context 'after adding an item' do
+        before { post('/items', json: { name: "Apples" }, auth_token: auth_token) }
+
+        it 'gets a list with the added item' do
+          expect(json).to eql [{"name" => "Apples"}]
+        end
+      end
     end
 
-    it 'gets an empty list' do
-      expect(json).to eql []
-    end
+    context 'when not authorized' do
+      let(:auth_token) { nil }
 
-    context 'after adding an item' do
-      before { post('/items', json: { name: "Apples" }) }
+      it 'gets a 401 response' do
+        expect(response.status).to eql 401
+      end
 
-      it 'gets a list with the added item' do
-        expect(json).to eql [{"name" => "Apples"}]
+      it 'tells you to supply a X-Auth-Token' do
+        expect(json).to eql({ "error" => "Please supply a X-Auth-Token header" })
       end
     end
   end
 
   describe 'GET /someotherroute' do
     it 'gets a 404 response' do
-      expect(get('/someotherroute').status).to eql 404
+      expect(get('/someotherroute', auth_token: auth_token).status).to eql 404
     end
   end
 
   describe 'POST /items' do
-    subject(:response) { post('/items', json: payload) }
+    subject(:response) { post('/items', json: payload, auth_token: auth_token) }
 
     context 'with a valid payload' do
       let(:payload) { {name: "Bananas"} }
