@@ -4,7 +4,7 @@ extern crate rusqlite;
 extern crate rustc_serialize;
 
 use iron::prelude::*;
-use iron::{status, AroundMiddleware, Handler, Headers};
+use iron::{status, AroundMiddleware, Handler};
 use router::Router;
 use std::io::Read;
 
